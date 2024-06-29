@@ -1,148 +1,200 @@
-import 'dart:js_interop';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_future/models/profile_model.dart';
+import 'package:flutter_future/services/service_data.dart';
 
-class ProfilePage extends StatelessWidget {
-  final List<Task> tasks = [
-    Task(
-        title: 'Ir de compras al super',
-        description: 'No te olvides de llevar la lista',
-        imageUrl: 'assets/image/supermarket.jpg',
-        isCompleted: true),
-    Task(
-        title: 'Llevar las cosas a la casa del',
-        description: 'Son cosas delicadas debes de tener cuidado',
-        imageUrl: 'assets/image/delicate_items.jpg',
-        isCompleted: true),
-    Task(
-        title: 'Conseguir comida para las ma...',
-        description: 'Deben ser bajo en grasas',
-        imageUrl: 'assets/image/food.jpg',
-        isCompleted: false),
-  ];
+class PerfilPage extends StatefulWidget {
+  @override
+  State<PerfilPage> createState() => _PerfilPageState();
+}
+
+class _PerfilPageState extends State<PerfilPage> {
+  late Future<ProfileModel> persona1Future;
+  ServiceData serviceData = ServiceData();
+
+  @override
+  void initState() {
+    super.initState();
+    persona1Future = serviceData.getSpecificProfile();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
+    return SafeArea(
+      child: Scaffold(
+        body: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              UserProfileHeader(),
-              SizedBox(height: 20),
-              UserProfileInfo(),
-              SizedBox(height: 20),
-              TaskList(tasks: tasks),
-            ],
+          child: FutureBuilder<ProfileModel>(
+            future: persona1Future,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              } else if (snapshot.hasData) {
+                ProfileModel persona1 = snapshot.data!;
+                return Column(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Color(0xff272727),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Image.network(
+                                persona1.image,
+                                fit: BoxFit.cover,
+                                height: 100,
+                                width: 100,
+                              ),
+                              SizedBox(width: 16), // Espaciado entre imagen y texto
+                              Expanded( // Ajustar el espacio restante
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${persona1.fullName}",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ), 
+                                    Text(
+                                      "${persona1.profesion}",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Container(
+                                      padding: EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xff424242),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                            children: persona1.socialList.map((e) => 
+                                              Expanded(
+                                                child: Text(
+                                                  e.titulo,
+                                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                            ).toList(),
+                                          ),
+                                          Row(
+                                            children: persona1.socialList.map((e) => 
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(10.0),
+                                                  child: Text(
+                                                    e.value.toString(),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+                                            ).toList(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      // Acción del primer botón
+                                    },
+                                    child: Text('Chat'),
+                                    style: ElevatedButton.styleFrom(
+                                     backgroundColor: Color(0xff272727),
+                                     shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15.0),
+                                    side: BorderSide(color: Colors.white, width: 1.0), // Color del borde
+                                  ),
+                                      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      // Acción del segundo botón
+                                    },
+                                    child: Text('Follow',style: TextStyle(color: Colors.white),),
+                                    style: ElevatedButton.styleFrom(
+                                     backgroundColor: Color(0xff00D6A0),
+                                       shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15.0),
+                                        side: BorderSide(color: Colors.white, width: 1.0),
+                                        ),
+                                        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "Information",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(persona1.information),
+                    ...persona1.pendientesList.map(
+                      (e) => Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ListTile(
+                          leading: Image.network(e.imageUrl),
+                          title: Text(e.titulo),
+                          subtitle: Text(e.description),
+                          trailing: Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ),
+                    ).toList(),
+                  ],
+                );
+              }
+              return Center(
+                child: Text('No data found'),
+              );
+            },
           ),
         ),
       ),
     );
   }
-}
-
-class UserProfileHeader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundImage: AssetImage('assets/image/profile.jpg'), // Asegúrate de tener una imagen en esta ruta
-        ),
-        SizedBox(width: 20),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tony Stark',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Text('Mecanico'),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                _buildStatistic('Articles', '43'),
-                SizedBox(width: 10),
-                _buildStatistic('Following', '234'),
-                SizedBox(width: 10),
-                _buildStatistic('Rating', '6.3'),
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                ElevatedButton(onPressed: () {}, child: Text('Chat')),
-                SizedBox(width: 10),
-                ElevatedButton(onPressed: () {}, child: Text('Follow')),
-              ],
-            ),
-          ],
-        ),
-        Text("Imfo")
-        
-      ],
-    );
-  }
-
-  Widget _buildStatistic(String label, String value) {
-    return Column(
-      children: [
-        Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        Text(label),
-      ],
-    );
-  }
-}
-
-class UserProfileInfo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      'Stark es un fabricante, genio inventor, héroe y explayboy propietario de Industrias Stark. Al comienzo de la saga, es el principal fabricante de armas para el ejército de los Estados Unidos, hasta que cambia de parecer y redirige su conocimiento técnico hacia la creación de armaduras metalizadas que usa para defenderse de aquellos que amenazan la paz alrededor del mundo.',
-      style: TextStyle(fontSize: 16),
-    );
-  }
-}
-
-class TaskList extends StatelessWidget {
-  final List<Task> tasks;
-
-  TaskList({required this.tasks});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: tasks.map((task) => TaskTile(task: task)).toList(),
-    );
-  }
-}
-
-class TaskTile extends StatelessWidget {
-  final Task task;
-
-  TaskTile({required this.task});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: ListTile(
-        leading: Image.asset(task.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
-        title: Text(task.title),
-        subtitle: Text(task.description),
-        trailing: Icon(task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked),
-      ),
-    );
-  }
-}
-
-class Task {
-  final String title;
-  final String description;
-  final String imageUrl;
-  final bool isCompleted;
-
-  Task({required this.title, required this.description, required this.imageUrl, required this.isCompleted});
 }
